@@ -129,15 +129,15 @@ GO
 -- =============
 -- Table: Client
 -- =============
-CREATE TABLE Client (
-    TaxID 			NVARCHAR(50) 	PRIMARY KEY,
-    RegNmbr 		NVARCHAR(30) 	UNIQUE,
-    ClientName 		NVARCHAR(100) 	NOT NULL,
-    StreetAndNmbr 	NVARCHAR(100) 	NOT NULL,
-    City 			NVARCHAR(50) 	NOT NULL,
-    ZIP 			NVARCHAR(10) 	NOT NULL,
-    Country 		NVARCHAR(50) 	NOT NULL,
-    IsActive 		BIT 			NOT NULL 					DEFAULT 1,
+CREATE TABLE Client 
+    TaxID 			NVARCHAR(50) 							PRIMARY KEY,
+    RegNmbr 		NVARCHAR(30) 							UNIQUE,
+    ClientName 		NVARCHAR(100) 							NOT NULL,
+    StreetAndNmbr 	NVARCHAR(100) 							NOT NULL,
+    City 			NVARCHAR(50) 							NOT NULL,
+    ZIP 			NVARCHAR(10) 							NOT NULL,
+    Country 		NVARCHAR(50) 							NOT NULL,
+    IsActive 		BIT 									NOT NULL 					DEFAULT 1,
     Email 			NVARCHAR (100),
     ClientType 		NVARCHAR (10)
 );
@@ -146,15 +146,15 @@ GO
 -- ====================
 -- Table: ContactPerson
 -- ====================
-CREATE TABLE ContactPerson(
-    ContactPersonID 	INT 				IDENTITY(1,1) 			PRIMARY KEY
-    ContactName 	NVARCHAR(255) 	  	NOT NULL,
+CREATE TABLE ContactPerson(	
+    ContactPersonID INT 								IDENTITY(1,1) 						PRIMARY KEY
+    ContactName 	NVARCHAR(255) 	  					NOT NULL,
     Description 	NVARCHAR(255),
     PhoneNmbr 		NVARCHAR(50),
     PersonEmail 	NVARCHAR(100),
-    TaxID 			NVARCHAR(50) 	  	NOT NULL,
-    ClientType 		NVARCHAR(10) 	  	NOT NULL 				CHECK (ClientType IN ('Supplier', 'Transportation')),
-    CONSTRAINT fk_ContactPerson_TaxID 	FOREIGN KEY (TaxID) 	REFERENCES Client(TaxID),
+    TaxID 			NVARCHAR(50) 	  					NOT NULL,
+    ClientType 		NVARCHAR(10) 	  					NOT NULL 							CHECK (ClientType IN ('Supplier', 'Transportation')),
+    CONSTRAINT fk_ContactPerson_TaxID 					FOREIGN KEY (TaxID) 				REFERENCES Client(TaxID),
 );
 GO
 
@@ -162,55 +162,55 @@ GO
 -- Table: WorkOrder
 -- =================
 CREATE TABLE WorkOrder(
-    OrderID 		INT 				IDENTITY(1,1) 			PRIMARY KEY,
-    OrderDate 		DATE 				NOT NULL 				DEFAULT GETDATE(),
+    OrderID 		INT 								IDENTITY(1,1) 						PRIMARY KEY,
+    OrderDate 		DATE 								NOT NULL 							DEFAULT GETDATE(),
     OrderCode AS (
         'N-' + CAST(OrderID AS NVARCHAR(10)) + '/' + CAST(YEAR(OrderDate) AS NVARCHAR(4))
     ) PERSISTED,
-    Amount 			DECIMAL (18,2) 		NOT NULL,
-    Currency 		NVARCHAR(5) 		NOT NULL,
+    Amount 			DECIMAL (18,2) 						NOT NULL,
+    Currency 		NVARCHAR(5) 						NOT NULL,
     Note 			NVARCHAR(30),	
-    ClientID 		NVARCHAR(50) 		NOT NULL,
-    CONSTRAINT fk_WorkORder_ClientID 	FOREIGN KEY (ClientID) REFERENCES Client (TaxID)
+    ClientID 		NVARCHAR(50) 						NOT NULL,
+    CONSTRAINT fk_WorkORder_ClientID 														FOREIGN KEY (ClientID) REFERENCES Client (TaxID)
 );
 -- ===================
 -- Table: LoadingItem
 -- ===================
-CREATE TABLE LoadingItem(
-	LoadingID 		INT 				IDENTITY 				PRIMARY KEY,
-	Firm 			NVARCHAR (50) 		NOT NULL,
-	LoadingDate 	NVARCHAR(20) 		NOT NULL,
-	LoadingAdress 	NVARCHAR (50) 		NOT NULL,
-	Goods 			NVARCHAR(50) 		NOT NULL,
-	Customs 		NVARCHAR(50) 		NOT NULL,
-	ForwAgency 		NVARCHAR(50) 		NOT NULL,
-	Border 			NVARCHAR(50) 		NOT NULL,
-	Note 			NVARCHAR(50) 		NOT NULL,
-	OrderID 		INT 				NOT NULL,
-	CONSTRAINT fk_LoadingOrder 			FOREIGN KEY (OrderID) REFERENCES WorkOrder(OrderID)
+CREATE TABLE LoadingItem(	
+	LoadingID 		INT 								IDENTITY 							PRIMARY KEY,
+	Firm 			NVARCHAR (50) 						NOT NULL,
+	LoadingDate 	NVARCHAR(20) 						NOT NULL,
+	LoadingAdress 	NVARCHAR (50) 						NOT NULL,
+	Goods 			NVARCHAR(50) 						NOT NULL,
+	Customs 		NVARCHAR(50) 						NOT NULL,
+	ForwAgency 		NVARCHAR(50) 						NOT NULL,
+	Border 			NVARCHAR(50) 						NOT NULL,
+	Note 			NVARCHAR(50) 						NOT NULL,
+	OrderID 		INT 								NOT NULL,
+	CONSTRAINT fk_LoadingOrder 																	FOREIGN KEY (OrderID) REFERENCES WorkOrder(OrderID)
 );
 
 -- ====================
 -- Table: UnloadingItem
 -- ====================
 CREATE TABLE UnloadingItem(
-	UnloadingID 	INT 				IDENTITY 				PRIMARY KEY,
-	Firm 			NVARCHAR (50) 		NOT NULL,
-	UnloadingDate 	VARCHAR(20) 		NOT NULL,
-	UnloadingAdress NVARCHAR(50) 		NOT NULL,
-	Customs 		NVARCHAR(50) 		NOT NULL,
-	ForwAgency 		NVARCHAR(50) 		NOT NULL,
-	Note 			NVARCHAR(50) 		NOT NULL,
-	OrderID 		INT 				NOT NULL,
-	CONSTRAINT fk_UnloadingOrder 		FOREIGN KEY (OrderID) 	REFERENCES WorkOrder(OrderID)
+	UnloadingID 	INT 								IDENTITY 								PRIMARY KEY,
+	Firm 			NVARCHAR (50) 						NOT NULL,
+	UnloadingDate 	VARCHAR(20) 						NOT NULL,
+	UnloadingAdress NVARCHAR(50) 						NOT NULL,
+	Customs 		NVARCHAR(50) 						NOT NULL,
+	ForwAgency 		NVARCHAR(50) 						NOT NULL,
+	Note 			NVARCHAR(50) 						NOT NULL,
+	OrderID 		INT 								NOT NULL,
+	CONSTRAINT fk_UnloadingOrder 																FOREIGN KEY (OrderID) 	REFERENCES WorkOrder(OrderID)
 );
 
 -- =========================
 -- Table: DocumentStatusList 
 -- =========================
 CREATE TABLE DocumentStatusList (
-    DStatusID 				TINYINT 		PRIMARY KEY,
-    DStatusName 			NVARCHAR(10) 	NOT NULL,
+    DStatusID 				TINYINT 					PRIMARY KEY,
+    DStatusName 			NVARCHAR(10) 				NOT NULL,
     
 );
 GO
@@ -219,8 +219,8 @@ GO
 -- Table: ProcessingStatusList 
 -- ===========================
 CREATE TABLE ProcessingStatusList (
-    ProcessingStatusID 		TINYINT 		PRIMARY KEY,
-    ProcessingStatusName 	NVARCHAR(10) 	NOT NULL,
+    ProcessingStatusID 		TINYINT 					PRIMARY KEY,
+    ProcessingStatusName 	NVARCHAR(10) 				NOT NULL,
     
 );
 GO
@@ -229,8 +229,8 @@ GO
 -- Table: PaymentStatusList 
 -- ========================
 CREATE TABLE PaymentStatusList (
-    PaymentStatusID 	TINYINT 			PRIMARY KEY,
-    PaymentStatusName 	NVARCHAR(10) 		NOT NULL,
+    PaymentStatusID 	TINYINT 						PRIMARY KEY,
+    PaymentStatusName 	NVARCHAR(10) 					NOT NULL,
     
 );
 GO
@@ -239,21 +239,21 @@ GO
 -- Table: IncomingInvoice
 -- ======================
 CREATE TABLE IncomingInvoice (
-    IncInvID 			INT 				IDENTITY(1,1) 		PRIMARY KEY,
-    IncInvNmbr 			NVARCHAR(15) 		NOT NULL,
-    Amount 				NUMERIC(18, 2) 		NOT NULL,
-    Currency 			NVARCHAR(10) 		NOT NULL,
-    TransactionDate 	DATE 				NOT NULL,
-    DueDate 			DATE 				NOT NULL,
-    IssueDate 			DATE 				NOT NULL,
-    DocumentStatus 		INT 				NOT NULL
-    CONSTRAINT fk_IncomingInvoice_DocumentStatus 				FOREIGN KEY (DocumentStatus) 		REFERENCES DocumentStatusList(DStatusID),
-    PaymentStatus 		TINYINT 			NOT NULL
-    CONSTRAINT fk_IncomingInvoice_PaymentStatusID 				FOREIGN KEY (PaymentStatus) 		REFERENCES PaymentStatusList(PaymentStatusID),
-    ProcessingStatus 	TINYINT 			NOT NULL
-    CONSTRAINT fk_IncomingInvoice_ProcessingStatusID 			FOREIGN KEY (ProcessingStatus) 		REFERENCES ProcessingStatusList (ProcessingStatusID),
-    TaxID 				NVARCHAR(50) 		NOT NULL,
-    CONSTRAINT fk_IncomingInvoice_TaxID 	NOT NULL 			FOREIGN KEY (TaxID) 				REFERENCES Client(TaxID)
+    IncInvID 			INT 							IDENTITY(1,1) 									PRIMARY KEY,
+    IncInvNmbr 			NVARCHAR(15) 					NOT NULL,
+    Amount 				NUMERIC(18, 2) 					NOT NULL,
+    Currency 			NVARCHAR(10) 					NOT NULL,
+    TransactionDate 	DATE 							NOT NULL,
+    DueDate 			DATE 							NOT NULL,
+    IssueDate 			DATE 							NOT NULL,
+    DocumentStatus 		INT 							NOT NULL
+    CONSTRAINT fk_IncomingInvoice_DocumentStatus 														FOREIGN KEY (DocumentStatus) 		REFERENCES DocumentStatusList(DStatusID),
+    PaymentStatus 		TINYINT 						NOT NULL	
+    CONSTRAINT fk_IncomingInvoice_PaymentStatusID 														FOREIGN KEY (PaymentStatus) 		REFERENCES PaymentStatusList(PaymentStatusID),
+    ProcessingStatus 	TINYINT 						NOT NULL
+    CONSTRAINT fk_IncomingInvoice_ProcessingStatusID 													FOREIGN KEY (ProcessingStatus) 		REFERENCES ProcessingStatusList (ProcessingStatusID),
+    TaxID 				NVARCHAR(50) 					NOT NULL,
+    CONSTRAINT fk_IncomingInvoice_TaxID 				NOT NULL 										FOREIGN KEY (TaxID) 				REFERENCES Client(TaxID)
 );
 GO
 
@@ -261,24 +261,24 @@ GO
 -- Table: OutgoingInvoice
 -- ======================
 CREATE TABLE OutgoingInvoice (
-    InvoiceID 			INT 				IDENTITY(1,1) 		PRIMARY KEY,
-    OutInvoiceNmbr 		NVARCHAR(50) 		  UNIQUE 			NOT NULL,
-    Currency 			NVARCHAR(10) 							NOT NULL,
-    ReferenceNmbr 		NVARCHAR(50) 							NOT NULL,
+    InvoiceID 			INT 							IDENTITY(1,1) 									PRIMARY KEY,
+    OutInvoiceNmbr 		NVARCHAR(50) 		  			NOT NULL 										UNIQUE,
+    Currency 			NVARCHAR(10) 					NOT NULL,
+    ReferenceNmbr 		NVARCHAR(50) 					NOT NULL,
     OrderNmbr 			NVARCHAR(50),
-    TransDate 			DATE 									NOT NULL,
-    IssueDate 			DATE 									NOT NULL,
-    DueDate 			DATE 									NOT NULL,
+    TransDate 			DATE 							NOT NULL,
+    IssueDate 			DATE 							NOT NULL,
+    DueDate 			DATE 							NOT NULL,
     Attachment NNVARCHAR(500), -- file path
     Note 				NVARCHAR(255),
-    DocumentStatus 		TINYINT 								NOT NULL
-    CONSTRAINT fk_OutgoingInvoice_DocumentStatus 				FOREIGN KEY (DocumentStatus)		REFERENCES DocumentStatusList(DStatusID),
-    PaymentStatus 		TINYINT 				NOT NULL
-    CONSTRAINT fk_OutgoingInvoice_PaymentStatusID 				FOREIGN KEY (PaymentStatus) 		REFERENCES PaymentStatusList(PaymentStatusID),
-    ProcessingStatus 	TINYINT 				NOT NULL
-    CONSTRAINT fk_OutgoingInvoice_ProcessingStatusID 			FOREIGN KEY (ProcessingStatus) 		REFERENCES ProcessingStatusList (ProcessingStatusID),
-    TaxID 				NVARCHAR(50) 			NOT NULL,
-    CONSTRAINT fk_OutgoingInvoice_TaxID 						FOREIGN KEY (TaxID) 				REFERENCES Client(TaxID)
+    DocumentStatus 		TINYINT 						NOT NULL
+    CONSTRAINT fk_OutgoingInvoice_DocumentStatus 															FOREIGN KEY (DocumentStatus)		REFERENCES DocumentStatusList(DStatusID),
+    PaymentStatus 		TINYINT 						NOT NULL
+    CONSTRAINT fk_OutgoingInvoice_PaymentStatusID 															FOREIGN KEY (PaymentStatus) 		REFERENCES PaymentStatusList(PaymentStatusID),
+    ProcessingStatus 	TINYINT 						NOT NULL
+    CONSTRAINT fk_OutgoingInvoice_ProcessingStatusID 														FOREIGN KEY (ProcessingStatus) 		REFERENCES ProcessingStatusList (ProcessingStatusID),
+    TaxID 				NVARCHAR(50) 					NOT NULL,
+    CONSTRAINT fk_OutgoingInvoice_TaxID 																	FOREIGN KEY (TaxID) 				REFERENCES Client(TaxID)
 );
 GO
 
@@ -286,22 +286,22 @@ GO
 -- Table: Employee
 -- ================
 CREATE TABLE Employee (
-    EmplID 				INT 				IDENTITY(1,1) 		PRIMARY KEY,
-    EmplType 			NVARCHAR(50) 		NOT NULL,
-    FirstName 			NVARCHAR(50) 		NOT NULL,
-    LastName 			NVARCHAR(50) 		NOT NULL,
-    Status 				NVARCHAR(20) 		NOT NULL,
-    CONSTRAINT ck_Employee_Status 			CHECK (Status IN ('Active','Inactive')),
-    StreetAndNmbr 		NVARCHAR(100) 		NOT NULL,
-    City 				NVARCHAR(50) 		NOT NULL,
-    ZIPCode 			NVARCHAR(10) 		NOT NULL,
-    Country 			NVARCHAR(50) 		NOT NULL,
-    PhoneNmbr 			NVARCHAR(50) 		NOT NULL,
+    EmplID 				INT 							IDENTITY(1,1) 										PRIMARY KEY,
+    EmplType 			NVARCHAR(50) 					NOT NULL,
+    FirstName 			NVARCHAR(50) 					NOT NULL,
+    LastName 			NVARCHAR(50) 					NOT NULL,
+    Status 				NVARCHAR(20) 					NOT NULL,
+    CONSTRAINT ck_Employee_Status 						CHECK (Status IN ('Active','Inactive')),
+    StreetAndNmbr 		NVARCHAR(100) 					NOT NULL,
+    City 				NVARCHAR(50) 					NOT NULL,
+    ZIPCode 			NVARCHAR(10) 					NOT NULL,
+    Country 			NVARCHAR(50) 					NOT NULL,
+    PhoneNmbr 			NVARCHAR(50) 					NOT NULL,
     EmailAddress 		NVARCHAR(50),
-    IDCardNmbr 			NVARCHAR(20) 		NOT NULL,
-    PassportNmbr 		NVARCHAR(20) 		NOT NULL,
+    IDCardNmbr 			NVARCHAR(20) 					NOT NULL,
+    PassportNmbr 		NVARCHAR(20) 					NOT NULL,
     MgrID 				INT,
-    CONSTRAINT fk_Employee_MgrID 			FOREIGN KEY (MgrID) 								REFERENCES Employee(EmplID)
+    CONSTRAINT fk_Employee_MgrID 						FOREIGN KEY (MgrID) 								REFERENCES Employee(EmplID)
 );
 GO
 
@@ -309,11 +309,11 @@ GO
 -- Table: Truck
 -- ============
 CREATE TABLE Truck (
-    TruckID 		INT 					IDENTITY(1,1) 										PRIMARY KEY,
-    Make 			NVARCHAR(50) 			NOT NULL,
-    Model 			NVARCHAR(50) 			NOT NULL,
-    RegistrationTag NVARCHAR(20) 			NOT NULL,
-    Status 			NVARCHAR(10) 			NOT NULL
+    TruckID 		INT 								IDENTITY(1,1) 										PRIMARY KEY,
+    Make 			NVARCHAR(50) 						NOT NULL,
+    Model 			NVARCHAR(50) 						NOT NULL,
+    RegistrationTag NVARCHAR(20) 						NOT NULL,
+    Status 			NVARCHAR(10) 						NOT NULL
 
 );
 GO
@@ -322,11 +322,11 @@ GO
 -- Table: Trailer
 -- ==============
 CREATE TABLE Trailer (
-    TrailerID 		INT 					IDENTITY(1,1) 										PRIMARY KEY,
-    Make 			NVARCHAR(50) 			NOT NULL,
-    Model 			NVARCHAR(50) 			NOT NULL,
-    RegistrationTag NVARCHAR(20) 			NOT NULL,
-    Status 			NVARCHAR(10) 			NOT NULL
+    TrailerID 		INT 								IDENTITY(1,1) 										PRIMARY KEY,
+    Make 			NVARCHAR(50) 						NOT NULL,
+    Model 			NVARCHAR(50) 						NOT NULL,
+    RegistrationTag NVARCHAR(20) 						NOT NULL,
+    Status 			NVARCHAR(10) 						NOT NULL
 );
 GO
 
@@ -334,11 +334,11 @@ GO
 -- Table: Car
 -- ==========
 CREATE TABLE Car(
-    CarID 			INT 					IDENTITY(1,1) 										PRIMARY KEY,
-    Make 			NVARCHAR(50) 			NOT NULL,
-    Model 			NVARCHAR(50) 			NOT NULL,
-    RegistrationTag NVARCHAR(20) 			NOT NULL,
-    Status 			NVARCHAR(10) 			NOT NULL
+    CarID 			INT 								IDENTITY(1,1) 										PRIMARY KEY,
+    Make 			NVARCHAR(50) 						NOT NULL,
+    Model 			NVARCHAR(50) 						NOT NULL,
+    RegistrationTag NVARCHAR(20) 						NOT NULL,
+    Status 			NVARCHAR(10) 						NOT NULL
 );
 GO
 
@@ -346,22 +346,22 @@ GO
 -- Table: Composition
 -- ==================
 CREATE TABLE Composition (
-    CompositionID INT 						IDENTITY(1,1) 										PRIMARY KEY,
-    TruckID 	  INT 						NOT NULL,
-    TrailerID 	  INT 						NOT NULL,
-    FOREIGN KEY (TruckID) 					REFERENCES 											Truck(TruckID),
-    FOREIGN KEY (TrailerID) 				REFERENCES 											Trailer(TrailerID)
+    CompositionID INT 									IDENTITY(1,1) 										PRIMARY KEY,
+    TruckID 	  INT 									NOT NULL,
+    TrailerID 	  INT 									NOT NULL,
+    FOREIGN KEY (TruckID) 								REFERENCES 											Truck(TruckID),
+    FOREIGN KEY (TrailerID) 							REFERENCES 											Trailer(TrailerID)
 );
 
 -- ========================
 -- Table: DriverComposition
 -- ========================
 CREATE TABLE DriverComposition (
-    DriverCompID 	INT 										IDENTITY (1,1) PRIMARY KEY,
-    DriverID 		INT 										NOT NULL,
-    CompositionID 	INT 										NOT NULL,
-    FOREIGN KEY (DriverID) 										REFERENCES Employee(EmplID),
-    FOREIGN KEY (CompositionID) 								REFERENCES Composition(CompositionID),
+    DriverCompID 	INT 								IDENTITY (1,1) 										PRIMARY KEY,
+    DriverID 		INT 								NOT NULL,
+    CompositionID 	INT 								NOT NULL,
+    FOREIGN KEY (DriverID) 								REFERENCES Employee(EmplID),
+    FOREIGN KEY (CompositionID) 						REFERENCES Composition(CompositionID),
 );
 GO
 
@@ -369,11 +369,11 @@ GO
 -- Table: EmployeeCar
 -- ==================
 CREATE TABLE EmployeeCar (
-    ID 				INT 										PRIMARY KEY IDENTITY(1,1),
-    EmplID 			INT 										NOT NULL,
-    CarID 			INT 										NOT NULL,
-    FOREIGN KEY (EmplID) 										REFERENCES Employee(EmplID),
-    FOREIGN KEY (CarID) 										REFERENCES Car(CarID),
+    ID 				INT 									IDENTITY(1,1)									PRIMARY KEY ,
+    EmplID 			INT 									NOT NULL,
+    CarID 			INT 									NOT NULL,
+    FOREIGN KEY (EmplID) 									REFERENCES Employee(EmplID),
+    FOREIGN KEY (CarID) 									REFERENCES Car(CarID),
 );
 GO
 
@@ -381,7 +381,7 @@ GO
 -- Table: VATCodeList
 -- ==================
 CREATE TABLE VATCodeList(
-    VATCode 		NVARCHAR(6) 								PRIMARY KEY,
+    VATCode 		NVARCHAR(6) 							PRIMARY KEY,
     VATPercentage 	DECIMAL(3,2)
 );
 GO
@@ -390,10 +390,10 @@ GO
 -- Table: VATExamptionReason
 -- =========================
 CREATE TABLE VATExamptionReason(
-    VATCode 		 NVARCHAR(6) 								NOT NULL,
-    VATExamptionCode NVARCHAR(50) 								NOT NULL,
-    CONSTRAINT fk_VATExamptionReason_VATCode 					FOREIGN KEY (VATCode) REFERENCES VATCodeList (VATCode),
-    CONSTRAINT pk_VATExamptionReason 							PRIMARY KEY (VATCode,VATExamptionCode)
+    VATCode 		 NVARCHAR(6) 							NOT NULL,
+    VATExamptionCode NVARCHAR(50) 							NOT NULL,
+    CONSTRAINT fk_VATExamptionReason_VATCode 				FOREIGN KEY (VATCode) REFERENCES VATCodeList (VATCode),
+    CONSTRAINT pk_VATExamptionReason 						PRIMARY KEY (VATCode,VATExamptionCode)
 );
 GO
 
@@ -401,7 +401,7 @@ GO
 -- Table: Service
 -- ==============
 CREATE TABLE Service(
-	ServiceID 		INT IDENTITY(1,1) 							PRIMARY KEY,
+	ServiceID 		INT IDENTITY(1,1) 				  		PRIMARY KEY,
 	ServiceType 	NVARCHAR(20)
 );
 GO
@@ -411,14 +411,14 @@ GO
 -- ============================
 CREATE TABLE TransportationService (
     ServiceID 		INT,
-    Route 			NVARCHAR(100) 								NOT NULL,
-    Price 			DECIMAL(18, 2) 								NOT NULL,
-    CompositionID 	INT 										NOT NULL,
-    CONSTRAINT fk_TranService_ServiceID 						FOREIGN KEY(ServiceID)
+    Route 			NVARCHAR(100) 							NOT NULL,
+    Price 			DECIMAL(18, 2) 							NOT NULL,
+    CompositionID 	INT 									NOT NULL,
+    CONSTRAINT fk_TranService_ServiceID 					FOREIGN KEY(ServiceID)
     REFERENCES Service(ServiceID),
-    CONSTRAINT fk_TransServiceComposition 						FOREIGN KEY(CompositionID)
+    CONSTRAINT fk_TransServiceComposition 					FOREIGN KEY(CompositionID)
     REFERENCES Composition(CompositionID),
-    CONSTRAINT pk_TransportationService 						PRIMARY KEY(ServiceID)
+    CONSTRAINT pk_TransportationService 					PRIMARY KEY(ServiceID)
 );	
 GO
 
@@ -429,9 +429,9 @@ CREATE TABLE TaxService(
 	ServiceID 		INT,
 	Name 			NVARCHAR(100),
 	Price 			DECIMAL(18,2),
-	CONSTRAINT fk_TaxService_ServiceID 							FOREIGN KEY(ServiceID)
+	CONSTRAINT fk_TaxService_ServiceID 						FOREIGN KEY(ServiceID)
     REFERENCES Service(ServiceID),
-    CONSTRAINT pk_TaxService 									PRIMARY KEY(ServiceID)	
+    CONSTRAINT pk_TaxService 								PRIMARY KEY(ServiceID)	
 );
 GO
 
@@ -443,9 +443,9 @@ CREATE TABLE OutsourcingServiceTable (
 	Route 			NVARCHAR(100),
 	Price 			DECIMAL(18,2),
 	RegTag 			NVARCHAR(50),
-	CONSTRAINT fk_TaxService_ServiceID 							FOREIGN KEY(ServiceID)
+	CONSTRAINT fk_TaxService_ServiceID 						FOREIGN KEY(ServiceID)
     REFERENCES Service(ServiceID),
-    CONSTRAINT pk_TaxService 									PRIMARY KEY(ServiceID)	
+    CONSTRAINT pk_TaxService 								PRIMARY KEY(ServiceID)	
 );
 GO
 
@@ -453,14 +453,14 @@ GO
 -- Table: Item
 -- ===========
 CREATE TABLE Item(
-	InvoiceID 			INT 									NOT NULL,
-	ServiceID 			INT										NOT NULL,
+	InvoiceID 			INT 								NOT NULL,
+	ServiceID 			INT									NOT NULL,
 	UoM 				NVARCHAR(5),
 	Quantity 			INT,
-	VATCode 			NVARCHAR(6) 							NOT NULL,
+	VATCode 			NVARCHAR(6) 						NOT NULL,
 	VATExamptionCode 	NVARCHAR(50),
-	CONSTRAINT pk_Item 											PRIMARY KEY(InvoiceID, ServiceID),
-	CONSTRAINT fk_Item_Vat 										FOREIGN KEY (VATCode, VATExamptionCode) REFERENCES VATExamptionReason (VATCode, VATExamptionCode)
+	CONSTRAINT pk_Item 										PRIMARY KEY(InvoiceID, ServiceID),
+	CONSTRAINT fk_Item_Vat 									FOREIGN KEY (VATCode, VATExamptionCode) REFERENCES VATExamptionReason (VATCode, VATExamptionCode)
 );
 GO
 
@@ -581,7 +581,7 @@ CREATE TABLE ExpenseEUR (
     ExpenseID 		INT IDENTITY (1,1) 						PRIMARY KEY,
     Amount 			DECIMAL (18,2) 							NOT NULL,
     OrderNmbr 		NVARCHAR(15) 							NOT NULL,
-    CONSTRAINT fk_ExpenseEUR_OrderNmbr 						FOREIGN KEY (OrderNmbr) REFERENCES PS_ItemEUR (OrderNmbr)
+    CONSTRAINT fk_ExpenseEUR_OrderNmbr 						FOREIGN KEY (OrderNmbr) 	REFERENCES PS_ItemEUR (OrderNmbr)
 );
 GO
 
@@ -611,14 +611,14 @@ GO
 -- Table: EmployeeInspection
 -- =========================
 CREATE TABLE EmployeeInspection (
-    ID 				INT 								IDENTITY(1,1) PRIMARY KEY,
-    EmployeeID 		INT 								NOT NULL,
-    InspectionID 	INT 								NOT NULL,
-    OldDate 		DATE 								NOT NULL,
-    NewDate 		DATE 								NOT NULL,
-    CONSTRAINT fk_EmployeeInspection_EmployeeID 		FOREIGN KEY (EmployeeID) 
+    ID 				INT 									IDENTITY(1,1) 				PRIMARY KEY,
+    EmployeeID 		INT 									NOT NULL,
+    InspectionID 	INT 									NOT NULL,
+    OldDate 		DATE 									NOT NULL,
+    NewDate 		DATE 									NOT NULL,
+    CONSTRAINT fk_EmployeeInspection_EmployeeID 			FOREIGN KEY (EmployeeID) 
     REFERENCES Employee(EmplID),
-    CONSTRAINT fk_EmployeeInspection_InspectionID 		FOREIGN KEY (InspectionID) 
+    CONSTRAINT fk_EmployeeInspection_InspectionID 			FOREIGN KEY (InspectionID) 
     REFERENCES Inspection(InspectionID),
 );
 GO
@@ -627,14 +627,14 @@ GO
 -- Table: TruckInspection
 -- ======================
 CREATE TABLE TruckInspection (
-    ID 				INT 							PRIMARY KEY IDENTITY(1,1),
-    TruckID 		INT 							NOT NULL,
-    InspectionID 	INT 							NOT NULL,
-    OldDate 		DATE 							NOT NULL,
-    NewDate 		DATE 							NOT NULL,
-    CONSTRAINT fk_TruckInspection_TruckID 			FOREIGN KEY (TruckID) 
+    ID 				INT 									PRIMARY KEY IDENTITY(1,1),
+    TruckID 		INT 									NOT NULL,
+    InspectionID 	INT 									NOT NULL,
+    OldDate 		DATE 									NOT NULL,
+    NewDate 		DATE 									NOT NULL,
+    CONSTRAINT fk_TruckInspection_TruckID 					FOREIGN KEY (TruckID) 
     REFERENCES Truck(TruckID),
-    CONSTRAINT fk_TruckInspection_InspectionID 		FOREIGN KEY (InspectionID) 
+    CONSTRAINT fk_TruckInspection_InspectionID 				FOREIGN KEY (InspectionID) 
     REFERENCES Inspection(InspectionID),
 );
 GO
@@ -643,14 +643,14 @@ GO
 -- Table: TrailerInspection
 -- ========================
 CREATE TABLE TrailerInspection (
-    ID 				INT 							PRIMARY KEY IDENTITY(1,1),
-    TrailerID 		INT 							NOT NULL,
-    InspectionID 	INT 							NOT NULL,
-    OldDate 		DATE 							NOT NULL,
-    NewDate 		DATE 							NOT NULL,
-    CONSTRAINT fk_TrailerInspection_TrailerID 		FOREIGN KEY (TrailerID) 
+    ID 				INT 									PRIMARY KEY IDENTITY(1,1),
+    TrailerID 		INT 									NOT NULL,
+    InspectionID 	INT 									NOT NULL,
+    OldDate 		DATE 									NOT NULL,
+    NewDate 		DATE 									NOT NULL,
+    CONSTRAINT fk_TrailerInspection_TrailerID 				FOREIGN KEY (TrailerID) 
     REFERENCES Trailer(TrailerID),
-    CONSTRAINT fk_TrailerInspection_InspectionID 	FOREIGN KEY (InspectionID) 
+    CONSTRAINT fk_TrailerInspection_InspectionID 			FOREIGN KEY (InspectionID) 
     REFERENCES Inspection(InspectionID),
 );
 GO
@@ -659,17 +659,15 @@ GO
 -- Table: CarInspection
 -- ====================
 CREATE TABLE CarInspection (
-    ID 				INT IDENTITY(1,1) 				PRIMARY KEY,
-    CarID 			INT 							NOT NULL,
-    InspectionID 	INT 							NOT NULL,
-    OldDate 		DATE 							NOT NULL,
-    NewDate 		DATE 							NOT NULL,
-    CONSTRAINT fk_CarInspection_CarID 				FOREIGN KEY (CarID) 
+    ID 				INT IDENTITY(1,1) 						PRIMARY KEY,
+    CarID 			INT 									NOT NULL,
+    InspectionID 	INT 									NOT NULL,
+    OldDate 		DATE 									NOT NULL,
+    NewDate 		DATE 									NOT NULL,
+    CONSTRAINT fk_CarInspection_CarID 						FOREIGN KEY (CarID) 
     REFERENCES Car(CarID),
-    CONSTRAINT fk_CarInspection_InspectionID 		FOREIGN KEY (InspectionID) 
+    CONSTRAINT fk_CarInspection_InspectionID 				FOREIGN KEY (InspectionID) 
     REFERENCES Inspection(InspectionID),
 );
 
 GO
-
-
