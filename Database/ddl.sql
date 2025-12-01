@@ -147,7 +147,7 @@ GO
 -- Table: ContactPerson
 -- ====================
 CREATE TABLE ContactPerson(
-    ContactPerson 	INT 				IDENTITY(1,1) 			PRIMARY KEY
+    ContactPersonID 	INT 				IDENTITY(1,1) 			PRIMARY KEY
     ContactName 	NVARCHAR(255) 	  	NOT NULL,
     Description 	NVARCHAR(255),
     PhoneNmbr 		NVARCHAR(50),
@@ -671,3 +671,4 @@ CREATE TABLE CarInspection (
 );
 
 GO
+
