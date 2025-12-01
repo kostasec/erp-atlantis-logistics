@@ -600,10 +600,10 @@ GO
 -- Table: InspectionOther
 -- ======================
 CREATE TABLE InspectionOther(
-InspectionID 	INT IDENTITY(1,1) 					PRIMARY KEY,
-Name 			NVARCHAR(100) 						NOT NULL,
-OldDate 		DATE 								NOT NULL,
-NewDate 		DATE 								NOT NULL
+InspectionID 	INT IDENTITY(1,1) 							PRIMARY KEY,
+Name 			NVARCHAR(100) 								NOT NULL,
+OldDate 		DATE 										NOT NULL,
+NewDate 		DATE 										NOT NULL
 );
 GO
 
@@ -611,14 +611,14 @@ GO
 -- Table: EmployeeInspection
 -- =========================
 CREATE TABLE EmployeeInspection (
-    ID 				INT 							IDENTITY(1,1) PRIMARY KEY,
-    EmployeeID 		INT 							NOT NULL,
-    InspectionID 	INT 							NOT NULL,
-    OldDate 		DATE 							NOT NULL,
-    NewDate 		DATE 							NOT NULL,
-    CONSTRAINT fk_EmployeeInspection_EmployeeID 	FOREIGN KEY (EmployeeID) 
+    ID 				INT 								IDENTITY(1,1) PRIMARY KEY,
+    EmployeeID 		INT 								NOT NULL,
+    InspectionID 	INT 								NOT NULL,
+    OldDate 		DATE 								NOT NULL,
+    NewDate 		DATE 								NOT NULL,
+    CONSTRAINT fk_EmployeeInspection_EmployeeID 		FOREIGN KEY (EmployeeID) 
     REFERENCES Employee(EmplID),
-    CONSTRAINT fk_EmployeeInspection_InspectionID 	FOREIGN KEY (InspectionID) 
+    CONSTRAINT fk_EmployeeInspection_InspectionID 		FOREIGN KEY (InspectionID) 
     REFERENCES Inspection(InspectionID),
 );
 GO
@@ -669,4 +669,5 @@ CREATE TABLE CarInspection (
     CONSTRAINT fk_CarInspection_InspectionID 		FOREIGN KEY (InspectionID) 
     REFERENCES Inspection(InspectionID),
 );
+
 GO
