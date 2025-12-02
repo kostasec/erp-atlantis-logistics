@@ -130,16 +130,16 @@ GO
 -- Table: Client
 -- =============
 CREATE TABLE Client 
-    TaxID 			NVARCHAR(50) 							PRIMARY KEY,
-    RegNmbr 		NVARCHAR(30) 							UNIQUE,
-    ClientName 		NVARCHAR(100) 							NOT NULL,
-    StreetAndNmbr 	NVARCHAR(100) 							NOT NULL,
-    City 			NVARCHAR(50) 							NOT NULL,
-    ZIP 			NVARCHAR(10) 							NOT NULL,
-    Country 		NVARCHAR(50) 							NOT NULL,
-    IsActive 		BIT 									NOT NULL 					DEFAULT 1,
+    TaxID 			NVARCHAR(50) 						PRIMARY KEY,
+    RegNmbr 		NVARCHAR(30) 						UNIQUE,
+    ClientName 		NVARCHAR(100) 						NOT NULL,
+    StreetAndNmbr 	NVARCHAR(100) 						NOT NULL,
+    City 			NVARCHAR(50) 						NOT NULL,
+    ZIP 			NVARCHAR(10) 						NOT NULL,
+    Country 		NVARCHAR(50) 						NOT NULL,
+    IsActive 		BIT 								NOT NULL 					DEFAULT 1,
     Email 			NVARCHAR (100),
-    ClientType 		NVARCHAR (10)
+    ClientType 		NVARCHAR (10)						CHECK (ClientType IN ('Supplier', 'Transportation')),
 );
 GO
 
@@ -152,8 +152,7 @@ CREATE TABLE ContactPerson(
     Description 	NVARCHAR(255),
     PhoneNmbr 		NVARCHAR(50),
     PersonEmail 	NVARCHAR(100),
-    TaxID 			NVARCHAR(50) 	  					NOT NULL,
-    ClientType 		NVARCHAR(10) 	  					NOT NULL 							CHECK (ClientType IN ('Supplier', 'Transportation')),
+    TaxID 			NVARCHAR(50) 	  					NOT NULL,						
     CONSTRAINT fk_ContactPerson_TaxID 					FOREIGN KEY (TaxID) 				REFERENCES Client(TaxID),
 );
 GO
@@ -247,11 +246,11 @@ CREATE TABLE IncomingInvoice (
     DueDate 			DATE 							NOT NULL,
     IssueDate 			DATE 							NOT NULL,
     DocumentStatus 		INT 							NOT NULL
-    CONSTRAINT fk_IncomingInvoice_DocumentStatus 														FOREIGN KEY (DocumentStatus) 		REFERENCES DocumentStatusList(DStatusID),
+	CONSTRAINT fk_IncomingInvoice_DocumentStatus 														FOREIGN KEY (DocumentStatus) 		REFERENCES DocumentStatusList(DStatusID),
+	ProcessingStatus 	TINYINT 						NOT NULL
+    CONSTRAINT fk_IncomingInvoice_ProcessingStatusID 													FOREIGN KEY (ProcessingStatus) 		REFERENCES ProcessingStatusList (ProcessingStatusID),
     PaymentStatus 		TINYINT 						NOT NULL	
     CONSTRAINT fk_IncomingInvoice_PaymentStatusID 														FOREIGN KEY (PaymentStatus) 		REFERENCES PaymentStatusList(PaymentStatusID),
-    ProcessingStatus 	TINYINT 						NOT NULL
-    CONSTRAINT fk_IncomingInvoice_ProcessingStatusID 													FOREIGN KEY (ProcessingStatus) 		REFERENCES ProcessingStatusList (ProcessingStatusID),
     TaxID 				NVARCHAR(50) 					NOT NULL,
     CONSTRAINT fk_IncomingInvoice_TaxID 				NOT NULL 										FOREIGN KEY (TaxID) 				REFERENCES Client(TaxID)
 );
@@ -671,3 +670,4 @@ CREATE TABLE CarInspection (
 );
 
 GO
+
