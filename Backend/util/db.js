@@ -1,32 +1,29 @@
-const sql = require('mssql/msnodesqlv8');
-
+const sql = require('mssql');
 
 const config = {
-    server: '(localdb)\\MSSQLLocalDB',
-    database: 'AtlantisIS',
+    server: process.env.DB_SERVER,
+    database: process.env.DB_DATABASE,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     options: {
-        trustedConnection: true,
-        trustServerCertificate: true
+        encrypt: true,
+        trustServerCertificate: false
     }
 };
 
 let poolPromise;
-try {
-  poolPromise = new sql.ConnectionPool(config)
+poolPromise = new sql.ConnectionPool(config)
     .connect()
     .then(pool => {
-      console.log('Connected to SQL Server');
-      return pool;
+        console.log('Connected to SQL Server');
+        return pool;
     })
     .catch(err => {
-      console.error('Database Connection Failed!', err);
-      throw err;
+        console.error('Database Connection Failed!', err);
+        throw err;
     });
-} catch (err) {
-  console.error('SQL Server connection error:', err);
-}
 
 module.exports = {
-  sql,
-  getPool: () => poolPromise
+    sql,
+    getPool: () => poolPromise
 };

@@ -20,17 +20,16 @@
     "express": "^5.1.0",
     "isomorphic-dompurify": "^2.34.0",
     "jsonwebtoken": "^9.0.3",
-    "msnodesqlv8": "^5.1.1",
-    "mssql": "^11.0.1",
-    "swagger-jsdoc": "^6.2.8",
+    "mssql": "^12.2.0",
+    "swagger-jsdoc": "^1.2.1",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
     "@types/node": "^24.3.1",
     "chai": "^5.2.1",
-    "jest": "^30.0.5",
-    "mocha": "^11.7.1",
+    "jest": "^25.0.0",
+    "mocha": "^11.3.0",
     "supertest": "^7.1.4",
     "typescript": "^5.9.2"
   }
