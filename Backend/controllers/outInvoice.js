@@ -1,32 +1,70 @@
 const { sql, getPool } = require('../util/db');
-const OutInvoice = require('../models/OutInvoice');
+const OutInvoice = require('../models/Invoice/OutInvoice');
 const Client = require('../models/Client');
-const Composition = require('../models/Composition');
-const Vat = require('../models/Vat');
-const DocumentStatus = require('../models/DocumentStatus');
-const ProcessingStatus = require('../models/ProcessingStatus');
-const PaymentStatus = require('../models/PaymentStatus');
+const Composition = require('../models/Vehicle/Composition');
+const Vat = require('../models/Invoice/Vat');
+const DocumentStatus = require('../models/Status/DocumentStatus');
+const ProcessingStatus = require('../models/Status/ProcessingStatus');
+const PaymentStatus = require('../models/Status/PaymentStatus');
 
+/**
+ * @swagger
+ * /outInvoice/read:
+ *   get:
+ *     summary: Vraća sve izlazne fakture
+ *     description: Frontend service metoda - outgoingInvoiceService.getReadInvoice()
+ *     tags: [Invoices]
+ *     responses:
+ *       200:
+ *         description: Lista izlaznih faktura
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       documentStatus:
+ *                         type: string
+ *                       processingStatus:
+ *                         type: string
+ *                       dueDate:
+ *                         type: string
+ *                         format: date
+ *                       recipient:
+ *                         type: string
+ *                       invoiceNumber:
+ *                         type: string
+ *                       amount:
+ *                         type: number
+ *                       currency:
+ *                         type: string
+ *                       paymentStatus:
+ *                         type: string
+ *       500:
+ *         description: Greška na serveru
+ */
 exports.getReadInvoice = async (req, res, next) => {
     try {
         const result = await OutInvoice.fetchAll();
 
-        // Proveri da li je zahtev za API (JSON)
-        if (req.headers.accept && req.headers.accept.includes('application/json')) {
-            // Transformacija podataka za frontend format
-            const transformedInvoices = result.recordset.map(invoice => {
-        
-            return{
+        // Transformacija podataka za frontend format
+        const transformedInvoices = result.recordset.map(invoice => {
+            return {
                id: invoice.InvoiceNumber, // Jedinstveni identifikator za React key
                documentStatus: invoice.DocumentStatus,
                processingStatus: invoice.ProcessingStatus,
-               issueDate: invoice.IssueDate,
-               sendDate: invoice.SendDate,
-               deliveredDate: invoice.DeliveredDate,
                dueDate: invoice.DueDate,
                recipient: invoice.Recipient,
                invoiceNumber: invoice.InvoiceNumber,
-               amount: invoice.Amount,
+               amount: invoice.TotalInvoiceAmount,
                currency: invoice.Currency,      
                paymentStatus: invoice.PaymentStatusName        
             };
@@ -36,12 +74,14 @@ exports.getReadInvoice = async (req, res, next) => {
             success: true,
             data: transformedInvoices
         });
-    }
 
-      
     } catch (err) {
         console.error('Error fetching invoices:', err);
-        res.status(500).send('Database Error');
+        res.status(500).json({
+            success: false,
+            message: 'Database Error',
+            error: err.message
+        });
     }
 };
 

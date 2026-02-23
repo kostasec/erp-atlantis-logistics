@@ -1,7 +1,10 @@
+require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./config/swagger');
 
 const errorController = require('./controllers/error');
 
@@ -13,30 +16,37 @@ app.set('views', 'views');
 
 //Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'], // Vite ports
+  origin: 'http://localhost:5173', // Vite ports
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 //Routes
 const employeeRoutes = require('./routes/employee');
 const clientRoutes = require('./routes/client');
 const outInvoiceRoutes = require('./routes/outInvoice');
 const incInvoiceRoutes = require('./routes/incInvoice');
-const vehicleTruckCompositionRoutes = require('./routes/vehicle/truckComposition');
-const vehicleTrailerCompositionRoutes = require('./routes/vehicle/trailerComposition');
-const vehicleCarRoutes = require('./routes/vehicle/car');
+const vehicleRoutes = require('./routes/vehicle/index');
+const inspectionRoutes = require('./routes/inspection');
+const payslipRoutes = require('./routes/payslip');
+const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 const indexRoutes = require('./routes/index');
 
 app.use('/employee', employeeRoutes);
 app.use('/client', clientRoutes);
 app.use('/outInvoice', outInvoiceRoutes);
 app.use('/incInvoice', incInvoiceRoutes);
-app.use('/vehicle/truckComposition', vehicleTruckCompositionRoutes);
-app.use('/vehicle/trailerComposition', vehicleTrailerCompositionRoutes);
-app.use('/vehicle/car', vehicleCarRoutes);
+app.use('/vehicle', vehicleRoutes);
+app.use('/inspection', inspectionRoutes);
+app.use('/payslip', payslipRoutes);
+app.use('/auth', authRoutes);
+app.use('/users', userRoutes);
 
 app.use(indexRoutes);
 app.use(errorController.get404);

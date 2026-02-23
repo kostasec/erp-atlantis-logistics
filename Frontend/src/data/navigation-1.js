@@ -1,8 +1,5 @@
 import duotone from '@/icons/duotone';
-import sidebar from '@/icons/sidebar';
 import Car from '@/icons/Car';
-import MoneyIcon from '@/icons/MoneyIcon';
-import Email from '@/icons/Email';
 import Menu from '@/icons/Menu';
 export const navigations = [
  {
@@ -54,5 +51,10 @@ export const navigations = [
     name: 'Vehicles',
     icon: Car,
     path: '/dashboard/vehicle'
+  },{
+    name: 'Users',
+    icon: duotone.PersonCircleCheck,
+    path: '/dashboard/management/users',
+    access: 'admin'
   }
 ];

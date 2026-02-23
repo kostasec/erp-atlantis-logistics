@@ -1,28 +1,52 @@
+// routes/client.js
 const express = require('express');
 const router = express.Router();
-
 const clientController = require('../controllers/client');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
+// Apply authentication to all routes
+router.use(authenticateToken);
 
-// GET /client/read
-router.get('/read', clientController.getReadClient);
+/**
+ * GET /client
+ * Get all clients
+ */
+router.get('/', clientController.getAllClients);
 
-// POST /client/upsert
-router.post('/upsert', clientController.postUpsertClient);
+/**
+ * POST /client
+ * Create or update client (UPSERT)
+ */
+router.post('/', clientController.upsertClient);
 
-// GET /client/insert
-router.get('/insert', clientController.getInsertClient);
+/**
+ * GET /client/:taxId
+ * Get client by TaxID
+ */
+router.get('/:taxId', clientController.getClientByTaxId);
 
-// GET /client/update/:taxId
-router.get('/update/:taxId', clientController.getUpdateClient);
+/**
+ * DELETE /client/:taxId
+ * Delete client (soft delete)
+ */
+router.delete('/:taxId', clientController.deleteClient);
 
-// POST /client/delete/:id
-router.post('/delete/:id', clientController.postDeleteClient);
+/**
+ * GET /client/by-reg/:regNmbr
+ * Get client by Registration Number
+ */
+router.get('/by-reg/:regNmbr', clientController.getClientByRegNmbr);
 
-// POST /client/contact/delete/:id
-router.post('/contact/delete/:id', clientController.postDeleteClientContact);
+/**
+ * GET /client/by-name/:clientName
+ * Get client by Client Name
+ */
+router.get('/by-name/:clientName', clientController.getClientByClientName);
 
-// API endpoint za frontend
-router.get('/api', clientController.getClientsAPI);
+/**
+ * DELETE /client/contact/:contactPersonId
+ * Delete contact person
+ */
+router.delete('/contact/:contactPersonId', clientController.deleteContact);
 
 module.exports = router;

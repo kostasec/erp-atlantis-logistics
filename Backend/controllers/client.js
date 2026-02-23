@@ -1,240 +1,307 @@
-//controllers/Client.js
-const { sql, getPool } = require('../util/db');
-const Client = require('../models/Client');
+// controllers/ClientController.js
+const ClientService = require('../services/ClientService');
 
-
-exports.getReadClient = async (req, res, next) => {
+/**
+ * @swagger
+ * /client:
+ *   get:
+ *     summary: Get all clients with contacts
+ *     tags: [Clients]
+ *     responses:
+ *       200:
+ *         description: List of clients
+ *       500:
+ *         description: Server error
+ */
+exports.getAllClients = async (req, res) => {
   try {
-    const result = await Client.fetchAll();
-    const rows = result.recordset;
-
-    const clientMap = {};
-    rows.forEach(row => {
-      if (!clientMap[row.TaxID]) {
-        clientMap[row.TaxID] = {
-          TaxID: row.TaxID,
-          ClientName: row.ClientName,
-          RegNmbr: row.RegNmbr,
-          StreetAndNmbr: row.StreetAndNmbr,
-          City: row.City,
-          ZIP: row.ZIP,
-          Country: row.Country,
-          Email: row.Email,
-          Contacts: []
-        };
-      }
-
-      if (row.ContactPersonID) {
-          clientMap[row.TaxID].Contacts.push({
-          ContactPersonID: row.ContactPersonID,
-          ContactName: row.ContactName,
-          Description: row.Description,
-          PhoneNmbr: row.PhoneNmbr,
-          PersonEmail: row.PersonEmail
-        });
-      }
-    });
-
-    const clients = Object.values(clientMap);
-
-    // Provjeri da li je zahtjev za API (JSON)
-    if (req.headers.accept && req.headers.accept.includes('application/json')) {
-      // Transformiraj podatke za frontend format
-      const transformedClients = clients.map(client => ({
-        id: client.TaxID,
-        taxId: client.TaxID,
-        clientName: client.ClientName,
-        regNmbr: client.RegNmbr,
-        adress: `${client.StreetAndNmbr}, ${client.City} ${client.ZIP}, ${client.Country}`,
-        email: client.Email,
-        contacts: client.Contacts.map(contact => ({
-          contactPersonID: contact.ContactPersonID,
-          name: contact.ContactName,
-          description: contact.Description,
-          phoneNumber: contact.PhoneNmbr,
-          email: contact.PersonEmail
-        })),
-        contactPerson: client.Contacts.length > 0 ? {
-          name: client.Contacts[0].ContactName,
-          description: client.Contacts[0].Description,
-          phoneNumber: client.Contacts[0].PhoneNmbr,
-          email: client.Contacts[0].PersonEmail
-        } : null
-      }));
-
-      return res.json({
-        success: true,
-        data: transformedClients
-      });
-    }
-
-    // Inače vrati HTML stranicu
-    res.render('client/read-client', {
-      pageTitle: 'All Clients',
-      path: '/client/read',
-      clients
-    });
-
-  } catch (err) {
-    console.error('Error fetching clients:', err);
-    if (req.headers.accept && req.headers.accept.includes('application/json')) {
-      res.status(500).json({
-        success: false,
-        message: 'Database Error'
-      });
-    } else {
-      res.status(500).send('Database Error');
-    }
-  }
-};
-
-// API endpoint za frontend
-exports.getClientsAPI = async (req, res, next) => {
-  try {
-    const result = await Client.fetchAll();
-    const rows = result.recordset;
-
-    const clientMap = {};
-    rows.forEach(row => {
-      if (!clientMap[row.TaxID]) {
-        clientMap[row.TaxID] = {
-          id: row.TaxID,
-          taxId: row.TaxID,
-          clientName: row.ClientName,
-          regNmbr: row.RegNmbr,
-          adress: `${row.StreetAndNmbr}, ${row.City} ${row.ZIP}, ${row.Country}`,
-          email: row.Email,
-          contacts: []
-        };
-      }
-
-      if (row.ContactPersonID) {
-        clientMap[row.TaxID].contacts.push({
-          contactPersonID: row.ContactPersonID,
-          name: row.ContactName,
-          description: row.Description,
-          phoneNumber: row.PhoneNmbr,
-          email: row.PersonEmail
-        });
-      }
-    });
-
-    const clients = Object.values(clientMap);
+    const clients = await ClientService.getAllClients();
     
-    // Dodajemo contactPerson kao prvi kontakt ako postoji
-    clients.forEach(client => {
-      if (client.contacts.length > 0) {
-        client.contactPerson = client.contacts[0];
-      }
-    });
-
     res.json({
       success: true,
       data: clients
     });
-
   } catch (err) {
     console.error('Error fetching clients:', err);
     res.status(500).json({
       success: false,
-      message: 'Database Error'
+      message: 'Failed to fetch clients'
     });
   }
 };
 
-
-exports.postUpsertClient = async (req, res, next) =>{
-  const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
-
-  try{
-    await transaction.begin();
-    await Client.upsert(req.body, transaction);
-    await transaction.commit();
-    res.redirect('/client/read');
-
-    } catch (err) {
-    await transaction.rollback();
-
-    if (err.number === 2627) {
-    console.error('Duplicate RegNmbr:', err);
-    return res.status(400).send('RegNmbr already exists for another client.');
-    }
-
-  console.error('Error upserting client:', err);
-  res.status(500).send('Database Error');
-
-  }
-
-}
-
-
-exports.getInsertClient = (req, res, next) => {
-  res.render('client/upsert-client', {
-    pageTitle: 'Create New Client',
-    client: {},
-    contacts: []
-  });
-};
-
-
-exports.getUpdateClient = async (req, res, next) => {
-  const taxId = req.params.taxId.trim();
-  const pool = await getPool();
-  
+/**
+ * @swagger
+ * /client/{taxId}:
+ *   get:
+ *     summary: Get client by Tax ID
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: taxId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Client found
+ *       404:
+ *         description: Client not found
+ *       500:
+ *         description: Server error
+ */
+exports.getClientByTaxId = async (req, res) => {
   try {
-    const clientRes = await Client.findClientByTaxId(taxId);
-    const contactRes = await Client.findContactsByTaxId(taxId);
-    if (clientRes.recordset.length === 0) {
-      return res.status(404).send('Client not found');
+    const { taxId } = req.params;
+    const client = await ClientService.getClientByTaxId(taxId.trim());
+    
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Client not found'
+      });
     }
-    res.render('client/upsert-client', {
-      pageTitle: 'Edit Client',
-      client: clientRes.recordset[0],
-      contacts: contactRes.recordset
+
+    res.json({
+      success: true,
+      data: client
     });
   } catch (err) {
-    console.error('Error loading client for edit:', err);
-    res.status(500).send('Database Error');
+    console.error('Error fetching client:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch client'
+    });
   }
 };
 
-
-exports.postDeleteClient = async (req, res, next) => {
-  const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
-
-    try {
-    await transaction.begin();
-    await Client.deleteClient(req.params.id,transaction);
-    await Client.deleteContact(req.params.id, transaction);
-    await transaction.commit();
-    console.log('Client deleted successfully.')
-    res.redirect('/client/read')
-
-    } catch (err) {
-    if (transaction && transaction._aborted !== true) {
-      await transaction.rollback();
+/**
+ * @swagger
+ * /client/by-reg/{regNmbr}:
+ *   get:
+ *     summary: Get client by Registration Number
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: regNmbr
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Client found
+ *       404:
+ *         description: Client not found
+ *       500:
+ *         description: Server error
+ */
+exports.getClientByRegNmbr = async (req, res) => {
+  try {
+    const { regNmbr } = req.params;
+    const client = await ClientService.getClientByRegNmbr(regNmbr.trim());
+    
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Client not found'
+      });
     }
+
+    res.json({
+      success: true,
+      data: client
+    });
+  } catch (err) {
+    console.error('Error fetching client:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch client'
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /client/by-name/{clientName}:
+ *   get:
+ *     summary: Get client by Client Name
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: clientName
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Client found
+ *       404:
+ *         description: Client not found
+ *       500:
+ *         description: Server error
+ */
+exports.getClientByClientName = async (req, res) => {
+  try {
+    const { clientName } = req.params;
+    const client = await ClientService.getClientByClientName(clientName.trim());
+    
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: 'Client not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: client
+    });
+  } catch (err) {
+    console.error('Error fetching client:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch client'
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /client:
+ *   post:
+ *     summary: Create or update client (UPSERT)
+ *     tags: [Clients]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *     responses:
+ *       200:
+ *         description: Client created/updated
+ *       400:
+ *         description: Validation error
+ *       409:
+ *         description: Duplicate entry
+ *       500:
+ *         description: Server error
+ */
+exports.upsertClient = async (req, res) => {
+  try {
+    const client = await ClientService.upsertClient(req.body);
+    
+    res.json({
+      success: true,
+      message: 'Client saved successfully',
+      data: client
+    });
+  } catch (err) {
+    console.error('Error upserting client:', err);
+
+    // Handle validation errors
+    if (err.status === 400) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+        errors: err.errors
+      });
+    }
+
+    // Handle duplicate errors
+    if (err.status === 409) {
+      return res.status(409).json({
+        success: false,
+        message: err.message
+      });
+    }
+
+    // Generic server error
+    res.status(500).json({
+      success: false,
+      message: 'Failed to save client'
+    });
+  }
+};
+
+/**
+ * @swagger
+ * /client/{taxId}:
+ *   delete:
+ *     summary: Delete client (soft delete)
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: taxId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Client deleted
+ *       404:
+ *         description: Client not found
+ *       500:
+ *         description: Server error
+ */
+exports.deleteClient = async (req, res) => {
+  try {
+    const { taxId } = req.params;
+    const result = await ClientService.deleteClient(taxId.trim());
+    
+    res.json({
+      success: true,
+      message: result.message
+    });
+  } catch (err) {
     console.error('Error deleting client:', err);
-    res.status(500).send('Database error');
+
+    if (err.status === 404) {
+      return res.status(404).json({
+        success: false,
+        message: err.message
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete client'
+    });
   }
 };
 
-
-exports.postDeleteClientContact = async (req, res, next) => {
-  const pool = await getPool();
-  const transaction = new sql.Transaction(pool);
-
+/**
+ * @swagger
+ * /client/contact/{contactPersonId}:
+ *   delete:
+ *     summary: Delete contact person
+ *     tags: [Clients]
+ *     parameters:
+ *       - in: path
+ *         name: contactPersonId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Contact deleted
+ *       500:
+ *         description: Server error
+ */
+exports.deleteContact = async (req, res) => {
   try {
-    await transaction.begin();
-    await Client.deleteContact(req.params.id, transaction);
-    await transaction.commit();
-    console.log('Client deleted successfully.')
-    res.redirect('/client/read')
-
+    const { contactPersonId } = req.params;
+    const result = await ClientService.deleteContact(parseInt(contactPersonId));
+    
+    res.json({
+      success: true,
+      message: result.message
+    });
   } catch (err) {
-    console.error('Error deleting contact person:', err);
-    res.status(500).send('Database error');
+    console.error('Error deleting contact:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete contact'
+    });
   }
 };

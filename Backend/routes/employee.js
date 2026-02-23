@@ -1,26 +1,58 @@
+// routes/employee.js
 const express = require('express');
 const router = express.Router();
-const { sql, getPool } = require('../util/db');
 const employeeController = require('../controllers/employee');
+const { authenticateToken, authorizeRoles } = require('../middleware/auth');
 
+// Apply authentication to all routes
+router.use(authenticateToken);
 
-// GET /employee/read
-router.get('/read', employeeController.getReadEmployee);
+/**
+ * GET /employee
+ * Get all active employees
+ */
+router.get('/', employeeController.getAllEmployees);
 
-// GET /employee/insert
-router.get('/insert', employeeController.getInsertEmployee);
+/**
+ * POST /employee
+ * Create new employee
+ */
+router.post('/', employeeController.createEmployee);
 
-// POST /employee/insert
-router.post('/insert', employeeController.postInsertEmployee);
+/**
+ * GET /employee/drivers
+ * Get all active drivers
+ */
+router.get('/drivers', employeeController.getDrivers);
 
-// GET /employee/update/:id
-router.get('/update/:id', employeeController.getUpdateEmployee);
+/**
+ * GET /employee/managers
+ * Get all active managers
+ */
+router.get('/managers', employeeController.getManagers);
 
-// POST /employee/update/:id
-router.post('/update/:id', employeeController.postUpdateEmployee);
+/**
+ * GET /employee/:id
+ * Get employee by ID
+ */
+router.get('/:id', employeeController.getEmployeeById);
 
-// POST /employee/delete/:id
-router.post('/delete/:id', employeeController.postDeleteEmployee);
+/**
+ * PUT /employee/:id
+ * Update employee
+ */
+router.put('/:id', employeeController.updateEmployee);
 
+/**
+ * DELETE /employee/:id
+ * Delete employee (soft delete)
+ */
+router.delete('/:id', employeeController.deleteEmployee);
+
+/**
+ * GET /employee/by-name/:fullName
+ * Get employee by full name (firstName lastName)
+ */
+router.get('/by-name/:fullName', employeeController.getEmployeeByName);
 
 module.exports = router;

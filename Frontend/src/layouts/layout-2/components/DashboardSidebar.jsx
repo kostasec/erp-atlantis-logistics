@@ -9,13 +9,16 @@ import Scrollbar from '@/components/scrollbar'; // CUSTOM DEFINED HOOK
 
 import useLayout from '@/layouts/layout-2/context/useLayout'; // CUSTOM NAVIGATION DATA
 
-import { navigations as navigation } from '@/data/navigation-1'; // STYLED COMPONENTS
+import { navigations as allNavigations } from '@/data/navigation-1';
+import { useContext, useMemo } from 'react';
+import { JWTContext } from '@/contexts/jwtContext'; // STYLED COMPONENTS
 
 import { Dot, LogoBox, MainMenu, SubMenuItem, NavItemButton, SecondarySideBar, MobileSidebarWrapper } from '@/layouts/layout-2/styles';
 import { useTranslation } from 'react-i18next';
 export default function LayoutSideBar() {
   const { t } = useTranslation();
   const theme = useTheme();
+  const { user } = useContext(JWTContext);
   const {
     active,
     downMd,
@@ -27,6 +30,11 @@ export default function LayoutSideBar() {
     handleActiveMainMenu,
     handleCloseMobileSidebar
   } = useLayout();
+
+  // Filter navigations based on user role
+  const navigation = useMemo(() => {
+    return allNavigations.filter(nav => !nav.access || nav.access === user?.role?.toLowerCase());
+  }, [user?.role]);
   const logoSrc = theme.palette.mode === 'dark' ? '/static/logo/logo-white.png' : '/static/logo/logo.png';
   const MAIN_SIDEBAR_CONTENT = <Fragment>
       {

@@ -46,7 +46,16 @@ export default memo(function PopoverLayout({
   };
   const content = useMemo(() => renderContent(handleClose), [renderContent, handleClose]);
   return <Fragment>
-      <IconButton onClick={handleOpen} ref={anchorRef}>
+      <IconButton 
+        onClick={handleOpen} 
+        ref={anchorRef}
+        sx={{
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none'
+          }
+        }}
+      >
         {selectButton}
       </IconButton>
 

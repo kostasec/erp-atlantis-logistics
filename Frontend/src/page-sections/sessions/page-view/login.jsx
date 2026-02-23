@@ -1,38 +1,38 @@
 import { useState } from 'react';
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup'; // MUI
+import { yupResolver } from '@hookform/resolvers/yup';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import ButtonBase from '@mui/material/ButtonBase';
-import Typography from '@mui/material/Typography'; // MUI ICON COMPONENT
+import Typography from '@mui/material/Typography';
+import Alert from '@mui/material/Alert';
 
 import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff'; // CUSTOM DEFINED HOOK
+import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
-import useAuth from '@/hooks/useAuth'; // CUSTOM LAYOUT COMPONENT
-
-import Layout from '../Layout'; // CUSTOM COMPONENTS
-
+import useAuth from '@/hooks/useAuth';
+import Layout from '../Layout';
 import Link from '@/components/link';
 import { FlexBetween, FlexBox } from '@/components/flexbox';
-import { FormProvider, TextField } from '@/components/form'; // CUSTOM ICON COMPONENTS
-
+import { FormProvider, TextField } from '@/components/form';
 import GoogleIcon from '@/icons/GoogleIcon';
 import Twitter from '@/icons/social/Twitter';
-import Facebook from '@/icons/social/Facebook'; // STYLED COMPONENTS
-
+import Facebook from '@/icons/social/Facebook';
 import { SocialButton, StyledDivider } from '../styles';
+
 const validationSchema = Yup.object().shape({
   email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
   password: Yup.string().min(6, 'Password should be of minimum 6 characters length').required('Password is required'),
   remember: Yup.boolean().optional()
 });
+
 export default function LoginPageView() {
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
   const {
     signInWithEmail,
     signInWithGoogle
@@ -43,8 +43,8 @@ export default function LoginPageView() {
   };
 
   const initialValues = {
-    email: 'atlantis@gmail.com',
-    password: 'atlantis',
+    email: '',
+    password: '',
     remember: true
   };
   const methods = useForm({
@@ -62,9 +62,11 @@ export default function LoginPageView() {
   } = methods;
   const handleFormSubmit = handleSubmit(async values => {
     try {
+      setError('');
       await signInWithEmail(values.email, values.password);
     } catch (error) {
-      console.log(error);
+      console.error('Login error:', error);
+      setError(error.message || 'Invalid email or password. Please try again.');
     }
   });
   return <Layout login>
@@ -79,23 +81,61 @@ export default function LoginPageView() {
 
 
         <FormProvider methods={methods} onSubmit={handleFormSubmit}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2, mt: 2 }} onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+
           <Grid container spacing={2}>
             <Grid size={12}>
               <Typography variant="body1" fontSize={16} mb={1.5}>
                 
               </Typography>
 
-              <TextField fullWidth name="email" placeholder="Enter your work email" />
+              <TextField 
+                fullWidth 
+                name="email" 
+                placeholder="Enter your work email"
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': {
+                      borderColor: 'grey.400',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'grey.500',
+                      boxShadow: 'none'
+                    }
+                  }
+                }}
+              />
             </Grid>
 
             <Grid size={12}>
-              <TextField fullWidth placeholder="Password" type={showPassword ? 'text' : 'password'} name="password" slotProps={{
-              input: {
-                endAdornment: <ButtonBase disableRipple disableTouchRipple onClick={() => setShowPassword(!showPassword)}>
-                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                      </ButtonBase>
-              }
-            }} />
+              <TextField 
+                fullWidth 
+                placeholder="Password" 
+                type={showPassword ? 'text' : 'password'} 
+                name="password" 
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&:hover fieldset': {
+                      borderColor: 'grey.400',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'grey.500',
+                      boxShadow: 'none'
+                    }
+                  }
+                }}
+                slotProps={{
+                  input: {
+                    endAdornment: <ButtonBase disableRipple disableTouchRipple onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                          </ButtonBase>
+                  }
+                }} 
+              />
 
               <FlexBetween my={1}>
                 <FlexBox alignItems="center" gap={1}>
@@ -116,18 +156,6 @@ export default function LoginPageView() {
             <Grid size={12}>
               <Button fullWidth type="submit" variant="contained" disabled={!isValid} loading={isSubmitting}>
                 Sign In
-              </Button>
-            </Grid>
-
-            <Grid size={12}>
-              <Button 
-                fullWidth 
-                variant="outlined" 
-                color="secondary"
-                onClick={() => signInWithEmail('admin@atlantis.com', 'password123')}
-                sx={{ mt: 1 }}
-              >
-                Quick Mock Login (Admin)
               </Button>
             </Grid>
           </Grid>

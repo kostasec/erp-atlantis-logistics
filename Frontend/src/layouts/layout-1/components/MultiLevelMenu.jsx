@@ -23,14 +23,22 @@ export default function MultiLevelMenu({
     t
   } = useTranslation();
   const navigate = useNavigate();
-  const {
-    pathname
-  } = useLocation();
+  const { pathname } = useLocation();
   const {
     handleCloseMobileSidebar
   } = useLayout(); // HANDLE ACTIVE CURRENT PAGE
 
-  const activeRoute = useCallback(path => pathname === path, [pathname]); // HANDLE NAVIGATE TO ANOTHER PAGE
+  const extraActiveMap = useMemo(() => ({
+    '/dashboard/client': ['/dashboard/add-client', '/dashboard/edit-client'],
+    '/dashboard/employee': ['/dashboard/add-employee', '/dashboard/edit-employee'],
+    '/dashboard/vehicle': ['/dashboard/add-vehicle', '/dashboard/edit-vehicle']
+  }), []);
+
+  const activeRoute = useCallback(path => {
+    if (pathname === path) return true;
+    const extras = extraActiveMap[path];
+    return extras ? extras.some(p => pathname.startsWith(p)) : false;
+  }, [pathname, extraActiveMap]); // HANDLE NAVIGATE TO ANOTHER PAGE
 
   const handleNavigation = useCallback(path => {
     navigate(path);
@@ -87,7 +95,7 @@ export default function MultiLevelMenu({
 
 
   const filterNavigation = useMemo(() => {
-    return navigations.filter(nav => !nav.access || nav.access === user?.role);
+    return navigations.filter(nav => !nav.access || nav.access === user?.role?.toLowerCase());
   }, [user?.role]);
   return <>{renderLevels(filterNavigation)}</>;
 }

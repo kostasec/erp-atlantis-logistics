@@ -17,6 +17,7 @@ import Menu from '@mui/icons-material/Menu'; // CUSTOM COMPONENTS
 import Link from '@/components/link';
 import Scrollbar from '@/components/scrollbar';
 import MegaMenu from './menu/MegaMenu';
+import ProfilePopover from '@/layouts/layout-parts/popovers/ProfilePopover';
 import MegaMenuList from './menu/MegaMenuList'; // CUSTOM ICON COMPONENT
 
 import ChevronDown from '@/icons/ChevronDown'; // NAVIGATION LIST
@@ -94,8 +95,9 @@ export default function Navigation() {
       <StyledNavItem href="http://uko-doc.vercel.app/" isDark={isComponentsRoute}>
         Documentation
       </StyledNavItem>
-
       <Button href="https://mui.com/store/items/uko-client-admin-dashboard/">Buy Now</Button>
+      {/* User profile popover on the right side */}
+      <ProfilePopover />
     </StyledNav>; // FOR SMALL AND MEDIUM SCREEN DEVICE
 
   const SMALL_DEVICE_CONTENT = <Fragment>
@@ -163,6 +165,10 @@ export default function Navigation() {
               <Button fullWidth href="https://mui.com/store/items/uko-client-admin-dashboard/">
                 Buy Now
               </Button>
+            </ListItem>
+            {/* User profile popover inside drawer for small devices */}
+            <ListItem>
+              <ProfilePopover />
             </ListItem>
           </List>
         </Scrollbar>

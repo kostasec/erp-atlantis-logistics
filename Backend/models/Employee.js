@@ -1,115 +1,155 @@
+// models/Employee.js
 const { sql, getPool } = require('../util/db');
 
-
 class Employee {
-
-  //Radi se fetchAll iz pogleda jer u pogledu imamo izlistana vozila i pun naziv menadzera po svakom zaposlenom
+  /**
+   * Fetch all active employees (from view)
+   */
   static async fetchAll() {
     const pool = await getPool();
     return pool.request().query(`
-      SELECT * FROM vw_EmployeeBack
-      WHERE Status='Active'
+      SELECT *
+      FROM vw_Employee
+      WHERE Status = 'Active'
+      ORDER BY LastName, FirstName;
     `);
   }
 
-  static async fetchDrivers(){
+  /**
+   * Fetch all active drivers
+   */
+  static async fetchDrivers() {
     const pool = await getPool();
     return pool.request().query(`
-        SELECT EmplID, FirstName, LastName
-        FROM Employee
-        WHERE EmplType='Driver'
-        `);
-  }
-  
-  static async findById(id) {
-    const pool = await getPool();
-    return pool.request()
-      .input('EmplID', sql.Int, id)
-      .query(`
-        SELECT *
-        FROM Employee
-        WHERE EmplID = @EmplID
-      `);
+      SELECT EmplID, FirstName, LastName
+      FROM Employee
+      WHERE EmplType = 'Driver' AND Status = 'Active'
+      ORDER BY LastName, FirstName;
+    `);
   }
 
+  /**
+   * Fetch all managers (Directors)
+   */
   static async fetchManagers() {
     const pool = await getPool();
     return pool.request().query(`
       SELECT EmplID, FirstName, LastName 
       FROM Employee 
-      WHERE EmplType LIKE '%Director%' AND Status = 'Active';
+      WHERE EmplType LIKE '%Director%' AND Status = 'Active'
+      ORDER BY LastName, FirstName;
     `);
   }
 
-  //Deo logike sa kontrolera je definisan ovde, predpostavljam da je lakse bilo
-  //U ovaj insert bi trebalo dodati i obelezja vozila, jer se na frontendu vozilo adresira za zaposlenog prilikom njegovog inserta u sistem
-  static async insert(reqBody, transaction) {
-  const mgrIdValue = (reqBody.MgrID && String(reqBody.MgrID).trim() !== '') ? parseInt(reqBody.MgrID, 10) : null;
+  /**
+   * Find employee by ID
+   */
+  static async findById(id) {
+    const pool = await getPool();
+    return pool.request()
+      .input('EmplID', sql.Int, parseInt(id, 10))
+      .query(`
+        SELECT *
+        FROM Employee
+        WHERE EmplID = @EmplID AND Status = 'Active'
+      `);
+  }
 
+  /**
+   * Find employee by first and last name
+   */
+  static async findByName(firstName, lastName) {
+    const pool = await getPool();
+    return pool.request()
+      .input('FirstName', sql.VarChar(50), firstName)
+      .input('LastName', sql.VarChar(50), lastName)
+      .query(`
+        SELECT *
+        FROM Employee
+        WHERE FirstName = @FirstName 
+        AND LastName = @LastName 
+        AND Status = 'Active'
+      `);
+  }
+
+  /**
+   * Insert new employee
+   */
+  static async insert(employeeDTO, transaction) {
     const result = await new sql.Request(transaction)
-      .input('EmplType', sql.VarChar, reqBody.EmplType)
-      .input('FirstName', sql.VarChar, reqBody.FirstName)
-      .input('LastName', sql.VarChar, reqBody.LastName)
-      .input('StreetAndNmbr', sql.VarChar, reqBody.StreetAndNmbr)
-      .input('City', sql.VarChar, reqBody.City)
-      .input('ZIPCode', sql.VarChar, reqBody.ZIPCode)
-      .input('Country', sql.VarChar, reqBody.Country)
-      .input('PhoneNmbr', sql.VarChar, reqBody.PhoneNmbr)
-      .input('EmailAddress', sql.VarChar, reqBody.EmailAddress)
-      .input('IDCardNmbr', sql.VarChar, reqBody.IDCardNmbr)
-      .input('PassportNmbr', sql.VarChar, reqBody.PassportNmbr)
-      .input('MgrID', sql.Int, mgrIdValue)
+      .input('EmplType', sql.VarChar(50), employeeDTO.EmplType)
+      .input('FirstName', sql.VarChar(50), employeeDTO.FirstName)
+      .input('LastName', sql.VarChar(50), employeeDTO.LastName)
+      .input('StreetAndNmbr', sql.VarChar(100), employeeDTO.StreetAndNmbr)
+      .input('City', sql.VarChar(50), employeeDTO.City)
+      .input('ZIPCode', sql.VarChar(10), employeeDTO.ZIPCode)
+      .input('Country', sql.VarChar(50), employeeDTO.Country)
+      .input('PhoneNmbr', sql.VarChar(50), employeeDTO.PhoneNmbr)
+      .input('EmailAddress', sql.VarChar(50), employeeDTO.EmailAddress)
+      .input('IDCardNmbr', sql.VarChar(20), employeeDTO.IDCardNmbr)
+      .input('PassportNmbr', sql.VarChar(20), employeeDTO.PassportNmbr)
+      .input('MgrID', sql.Int, employeeDTO.MgrID)
       .query(`
         INSERT INTO Employee 
-        (EmplType, FirstName, LastName, StreetAndNmbr, City, ZIPCode, Country, PhoneNmbr, EmailAddress, IDCardNmbr, PassportNmbr, MgrID)
+        (EmplType, FirstName, LastName, StreetAndNmbr, City, ZIPCode, Country, 
+         PhoneNmbr, EmailAddress, IDCardNmbr, PassportNmbr, MgrID, Status)
         VALUES 
-        (@EmplType, @FirstName, @LastName, @StreetAndNmbr, @City, @ZIPCode, @Country, @PhoneNmbr, @EmailAddress, @IDCardNmbr, @PassportNmbr, @MgrID);
+        (@EmplType, @FirstName, @LastName, @StreetAndNmbr, @City, @ZIPCode, @Country, 
+         @PhoneNmbr, @EmailAddress, @IDCardNmbr, @PassportNmbr, @MgrID, 'Active');
+        
         SELECT SCOPE_IDENTITY() AS EmplID;
       `);
 
     return result.recordset[0].EmplID;
   }
 
-  //Isto kao i kod Inserta, treba dodati update za vozilo
-  static async update(id, reqBody, transaction) {
-  const mgrIdValue = (reqBody.MgrID && String(reqBody.MgrID).trim() !== '') ? parseInt(reqBody.MgrID, 10) : null;
-
+  /**
+   * Update employee
+   */
+  static async update(id, employeeDTO, transaction) {
     return new sql.Request(transaction)
       .input('EmplID', sql.Int, parseInt(id, 10))
-      .input('EmplType', sql.VarChar, reqBody.EmplType)
-      .input('FirstName', sql.VarChar, reqBody.FirstName)
-      .input('LastName', sql.VarChar, reqBody.LastName)
-      .input('StreetAndNmbr', sql.VarChar, reqBody.StreetAndNmbr)
-      .input('City', sql.VarChar, reqBody.City)
-      .input('ZIPCode', sql.VarChar, reqBody.ZIPCode)
-      .input('Country', sql.VarChar, reqBody.Country)
-      .input('PhoneNmbr', sql.VarChar, reqBody.PhoneNmbr)
-      .input('EmailAddress', sql.VarChar, reqBody.EmailAddress)
-      .input('IDCardNmbr', sql.VarChar, reqBody.IDCardNmbr)
-      .input('PassportNmbr', sql.VarChar, reqBody.PassportNmbr)
-      .input('MgrID', sql.Int, mgrIdValue)
+      .input('EmplType', sql.VarChar(50), employeeDTO.EmplType)
+      .input('FirstName', sql.VarChar(50), employeeDTO.FirstName)
+      .input('LastName', sql.VarChar(50), employeeDTO.LastName)
+      .input('StreetAndNmbr', sql.VarChar(100), employeeDTO.StreetAndNmbr)
+      .input('City', sql.VarChar(50), employeeDTO.City)
+      .input('ZIPCode', sql.VarChar(10), employeeDTO.ZIPCode)
+      .input('Country', sql.VarChar(50), employeeDTO.Country)
+      .input('PhoneNmbr', sql.VarChar(50), employeeDTO.PhoneNmbr)
+      .input('EmailAddress', sql.VarChar(50), employeeDTO.EmailAddress)
+      .input('IDCardNmbr', sql.VarChar(20), employeeDTO.IDCardNmbr)
+      .input('PassportNmbr', sql.VarChar(20), employeeDTO.PassportNmbr)
+      .input('MgrID', sql.Int, employeeDTO.MgrID)
       .query(`
         UPDATE Employee SET
-            EmplType = @EmplType,
-            FirstName = @FirstName,
-            LastName = @LastName,
-            StreetAndNmbr = @StreetAndNmbr,
-            City = @City,
-            ZIPCode = @ZIPCode,
-            Country = @Country,
-            PhoneNmbr = @PhoneNmbr,
-            EmailAddress = @EmailAddress,
-            IDCardNmbr = @IDCardNmbr,
-            PassportNmbr = @PassportNmbr,
-            MgrID = @MgrID
+          EmplType = @EmplType,
+          FirstName = @FirstName,
+          LastName = @LastName,
+          StreetAndNmbr = @StreetAndNmbr,
+          City = @City,
+          ZIPCode = @ZIPCode,
+          Country = @Country,
+          PhoneNmbr = @PhoneNmbr,
+          EmailAddress = @EmailAddress,
+          IDCardNmbr = @IDCardNmbr,
+          PassportNmbr = @PassportNmbr,
+          MgrID = @MgrID
         WHERE EmplID = @EmplID
       `);
   }
 
+  /**
+   * Soft delete employee (set Status = 'Inactive')
+   */
   static async softDelete(id, transaction) {
     return new sql.Request(transaction)
       .input('EmplID', sql.Int, parseInt(id, 10))
-      .query(`UPDATE Employee SET Status = 'Inactive' WHERE EmplID = @EmplID`);
+      .query(`
+        UPDATE Employee 
+        SET Status = 'Inactive' 
+        WHERE EmplID = @EmplID
+      `);
   }
 }
 

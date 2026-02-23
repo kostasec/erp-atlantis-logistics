@@ -85,7 +85,13 @@ export const AccordionButton = styled(ButtonBase, {
     }
   },
   ...(active && {
-    backgroundColor: theme.palette.action.hover
+    backgroundColor: theme.palette.grey[100],
+    border: `2px solid ${theme.palette.primary.main}`,
+    fontWeight: 600,
+    ...theme.applyStyles('dark', {
+      backgroundColor: theme.palette.grey[700],
+      border: `2px solid ${theme.palette.primary.light}`
+    })
   })
 }));
 
@@ -139,9 +145,12 @@ export const NavItemButton = styled(ButtonBase, {
   ...(active && {
     borderRadius: '10px',
     color: theme.palette.primary.main,
-    backgroundColor: theme.palette.primary[25],
+    backgroundColor: theme.palette.grey[100],
+    border: `2px solid ${theme.palette.primary.main}`,
+    fontWeight: 600,
     ...theme.applyStyles('dark', {
-      backgroundColor: theme.palette.grey[700]
+      backgroundColor: theme.palette.grey[700],
+      border: `2px solid ${theme.palette.primary.light}`
     })
   }),
   '&:hover': {

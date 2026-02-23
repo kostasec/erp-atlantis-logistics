@@ -11,12 +11,19 @@
   "keywords": [],
   "description": "",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
+    "dompurify": "^3.3.0",
+    "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
+    "isomorphic-dompurify": "^2.34.0",
+    "jsonwebtoken": "^9.0.3",
     "msnodesqlv8": "^5.1.1",
-    "mssql": "^11.0.1"
+    "mssql": "^11.0.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",

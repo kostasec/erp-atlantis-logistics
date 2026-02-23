@@ -33,12 +33,12 @@ const UserTag = styled('span')(({ theme }) => ({
   background: theme.palette.mode === 'dark' ? 'linear-gradient(135deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.05) 100%)' : 'linear-gradient(135deg, rgba(37,99,235,0.16) 0%, rgba(37,99,235,0.08) 100%)',
   color: theme.palette.mode === 'dark' ? theme.palette.common.white : theme.palette.primary[700],
   border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.28)' : alpha(theme.palette.primary.main, 0.35)}`,
-  boxShadow: theme.palette.mode === 'dark' ? '0 10px 25px -18px rgba(0,0,0,0.9)' : `0 10px 25px -18px ${alpha(theme.palette.primary.main, 0.9)}`,
-  transition: 'transform 150ms ease, box-shadow 150ms ease',
+  boxShadow: 'none',
+  transition: 'transform 150ms ease',
   backdropFilter: 'blur(8px)',
   '&:hover': {
     transform: 'translateY(-1px)',
-    boxShadow: theme.palette.mode === 'dark' ? '0 14px 38px -20px rgba(0,0,0,0.95)' : `0 14px 38px -20px ${alpha(theme.palette.primary.main, 1)}`
+    boxShadow: 'none'
   }
 }));
 export default memo(function ProfilePopover() {
@@ -47,20 +47,30 @@ export default memo(function ProfilePopover() {
     logout,
     user
   } = useAuth();
-  const displayName = user?.name ?? 'Guest User';
-  const SELECT_BUTTON = <UserTag>{displayName}</UserTag>;
+  
+  const displayName = user?.firstName || user?.name?.split(' ')[0] || 'Guest User';
+  const fullName = user?.name || `${user?.firstName || ''} ${user?.lastName || ''}`.trim() || 'Guest User';
+  const SELECT_BUTTON = (
+    <UserTag title={fullName}>
+      {displayName}
+    </UserTag>
+  );
   const TITLE = <Box px={2} py={1.5}>
       <Typography variant="body2" fontWeight={600}>
-        {displayName}
+        {fullName}
       </Typography>
     </Box>;
   const RENDER_CONTENT = useCallback(onClose => {
     return <Box pt={1}>
-          <Text onClick={() => {
+      <Text onClick={() => {
+        navigate('/dashboard/profile');
+        onClose();
+      }}>Profile</Text>
+      <Text onClick={() => {
         logout();
         onClose();
       }}>Sign Out</Text>
-        </Box>;
-  }, [logout]);
+    </Box>;
+  }, [logout, navigate]);
   return <PopoverLayout maxWidth={230} minWidth={200} showMoreButton={false} selectButton={SELECT_BUTTON} title={TITLE} renderContent={RENDER_CONTENT} />;
 });

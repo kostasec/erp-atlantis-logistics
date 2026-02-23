@@ -1,7 +1,7 @@
 import { createContext, useEffect, useReducer, useCallback, useMemo } from 'react';
 import axios from 'axios'; // CUSTOM LOADING COMPONENT
 
-import { LoadingProgress } from '@/components/loader';
+import { LoadingProgress } from '../components/loader';
 // ==============================================================
 
 // ==============================================================
@@ -13,10 +13,10 @@ const initialState = {
 
 const setSession = accessToken => {
   if (accessToken) {
-    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('authToken', accessToken);
     axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
   } else {
-    localStorage.removeItem('accessToken');
+    localStorage.removeItem('authToken');
     delete axios.defaults.headers.common.Authorization;
   }
 };
@@ -62,23 +62,47 @@ export function AuthProvider({
   const [state, dispatch] = useReducer(reducer, initialState); // USER LOGIN HANDLER
 
   const login = useCallback(async (email, password) => {
-    // Mock login - accept any credentials
-    const mockUser = {
-      id: '1',
-      name: 'User',
-      email: email,
-      avatar: '/static/avatar/020-man-4.svg',
-      role: 'admin'
-    };
-    
-    setSession('mock-jwt-token');
-    dispatch({
-      type: 'LOGIN',
-      payload: {
-        user: mockUser,
-        isAuthenticated: true
+    try {
+      const response = await axios.post('http://localhost:5000/auth/login', {
+        email,
+        password
+      });
+
+      if (response.data.success) {
+        const token = response.data.token;
+        setSession(token);
+
+        // Use user data from backend response
+        const backendUser = response.data.user;
+        const firstName = backendUser.firstName || '';
+        const lastName = backendUser.lastName || '';
+        const fullName = firstName && lastName ? `${firstName} ${lastName}` : (firstName || lastName || backendUser.email);
+        
+        const user = {
+          id: backendUser.id,
+          userId: backendUser.id,
+          firstName: firstName,
+          lastName: lastName,
+          name: fullName,
+          email: backendUser.email,
+          avatar: '/static/avatar/020-man-4.svg',
+          role: backendUser.role,
+          permissions: backendUser.permissions
+        };
+
+        dispatch({
+          type: 'LOGIN',
+          payload: {
+            user: user,
+            isAuthenticated: true
+          }
+        });
+      } else {
+        throw new Error(response.data.message || 'Login failed');
       }
-    });
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'Login failed');
+    }
   }, []); // USER REGISTER HANDLER
 
   const register = useCallback(async (name, email, password) => {
@@ -114,20 +138,63 @@ export function AuthProvider({
 
   const checkCurrentUser = useCallback(async () => {
     try {
-      const accessToken = localStorage.getItem('accessToken');
+      const accessToken = localStorage.getItem('authToken');
 
       if (accessToken) {
         setSession(accessToken);
-        const {
-          data
-        } = await axios.get(`${API_URL}/users/profile`);
-        dispatch({
-          type: 'INIT',
-          payload: {
-            user: data,
-            isAuthenticated: true
+        
+        // Verify token with backend to get fresh user data
+        try {
+          const response = await axios.get('http://localhost:5000/auth/verify');
+          
+          if (response.data.success) {
+            const backendUser = response.data.user;
+            const firstName = backendUser.firstName || '';
+            const lastName = backendUser.lastName || '';
+            const fullName = firstName && lastName ? `${firstName} ${lastName}` : (firstName || lastName || backendUser.email);
+            
+            const user = {
+              id: backendUser.id,
+              userId: backendUser.id,
+              firstName: firstName,
+              lastName: lastName,
+              name: fullName,
+              email: backendUser.email,
+              avatar: '/static/avatar/020-man-4.svg',
+              role: backendUser.role,
+              permissions: backendUser.permissions
+            };
+            
+            dispatch({
+              type: 'INIT',
+              payload: {
+                user: user,
+                isAuthenticated: true
+              }
+            });
+          } else {
+            // Token is invalid
+            setSession(null);
+            dispatch({
+              type: 'INIT',
+              payload: {
+                user: null,
+                isAuthenticated: false
+              }
+            });
           }
-        });
+        } catch (verifyError) {
+          // Token verification failed (expired or invalid)
+          console.warn('Token verification failed:', verifyError.message);
+          setSession(null);
+          dispatch({
+            type: 'INIT',
+            payload: {
+              user: null,
+              isAuthenticated: false
+            }
+          });
+        }
       } else {
         dispatch({
           type: 'INIT',
@@ -138,6 +205,8 @@ export function AuthProvider({
         });
       }
     } catch (err) {
+      console.error('JWT token validation error:', err);
+      setSession(null);
       dispatch({
         type: 'INIT',
         payload: {

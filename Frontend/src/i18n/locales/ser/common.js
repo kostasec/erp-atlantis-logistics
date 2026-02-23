@@ -6,6 +6,7 @@ export default {
   Management: 'Upravljanje',
   Logistics: 'Logistika',
   Ecommerce: 'E-trgovina',
+  'Travel reimbursement': 'Putni troškovi',
   Accounts: 'Nalozi',
   Status: 'Status',
   Edit: 'Izmeni',
